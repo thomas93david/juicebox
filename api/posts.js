@@ -2,7 +2,7 @@ const postsRouter = require("express").Router();
 const { getAllPosts } = require("../db");
 
 postsRouter.use((req, res, next) => {
-  console.log("A request is being made to /posts");
+  console.log("A request to http://localhost:3000/api/posts is being made");
 
   next();
 });
