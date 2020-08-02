@@ -1,10 +1,6 @@
 require("dotenv").config();
-
-const client = new Client(
-  process.env.DATABASE_URL || "postgres://localhost:5432/juicebox-dev"
-);
-
 const { PORT = 3000 } = process.env;
+
 const express = require("express");
 const server = express();
 
