@@ -3,7 +3,6 @@ const usersRouter = require("express").Router();
 const { getAllUsers } = require("../db");
 const { getUserByUsername } = require("../db");
 const { createUser } = require("../db");
-
 const jwt = require("jsonwebtoken");
 
 usersRouter.use((req, res, next) => {
