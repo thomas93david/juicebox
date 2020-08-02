@@ -16,20 +16,20 @@ postsRouter.get("/", async (req, res) => {
     const allPosts = await getAllPosts();
 
     const posts = allPosts.filter((post) => {
-      // // keep a post if it is either active, or if it belongs to the current user
-      // if (post.active) {
-      //   return true;
-      // }
-      // // the post is not active, but it belongs to the current user
-      // if (req.user && post.author.id === req.user.id) {
-      //   return true;
-      // }
-      // // none of the above are true
-      // return false;
-      //otherway to write this code
-      const posts = allPosts.filter((post) => {
-        return post.active || (req.user && post.author.id === req.user.id);
-      });
+      // keep a post if it is either active, or if it belongs to the current user
+      if (post.active) {
+        return true;
+      }
+      // the post is not active, but it belongs to the current user
+      if (req.user && post.author.id === req.user.id) {
+        return true;
+      }
+      // none of the above are true
+      return false;
+      // otherway to write this code
+      // const posts = allPosts.filter((post) => {
+      //   return post.active || (req.user && post.author.id === req.user.id);
+      // });
     });
     res.send({
       posts,
