@@ -1,36 +1,29 @@
-const postsRouter = require("express").Router();
-const { getAllPosts } = require("../db");
+const express = require("express");
+const postsRouter = express.Router();
+
 const { requireUser } = require("./utils");
-const { createPost } = require("../db");
-const { updatePost } = require("../db");
-const { getPostById } = require("../db");
 
-postsRouter.use((req, res, next) => {
-  console.log("A request to http://localhost:3000/api/posts is being made");
-
-  next();
-});
+const { createPost, getAllPosts, updatePost, getPostById } = require("../db");
 
 postsRouter.get("/", async (req, res) => {
   try {
     const allPosts = await getAllPosts();
 
     const posts = allPosts.filter((post) => {
-      // keep a post if it is either active, or if it belongs to the current user
+      // the post is active, doesn't matter who it belongs to
       if (post.active) {
         return true;
       }
-      // the post is not active, but it belongs to the current user
+
+      // the post is not active, but it belogs to the current user
       if (req.user && post.author.id === req.user.id) {
         return true;
       }
+
       // none of the above are true
       return false;
-      // otherway to write this code
-      // const posts = allPosts.filter((post) => {
-      //   return post.active || (req.user && post.author.id === req.user.id);
-      // });
     });
+
     res.send({
       posts,
     });
@@ -45,26 +38,23 @@ postsRouter.post("/", requireUser, async (req, res, next) => {
   const tagArr = tags.trim().split(/\s+/);
   const postData = {};
 
-  //  only send the tags if there are some to send
   if (tagArr.length) {
     postData.tags = tagArr;
   }
 
   try {
-    //  add keys to postData object
     postData.authorId = req.user.id;
     postData.title = title;
     postData.content = content;
 
     const post = await createPost(postData);
 
-    //  this will create the post and the tags for us
     if (post) {
       res.send(post);
     } else {
       next({
         name: "PostCreationError",
-        message: "Error creating your post. Try again.",
+        message: "There was an error creating your post. Please try again.",
       });
     }
   } catch ({ name, message }) {

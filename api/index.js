@@ -1,4 +1,6 @@
-const apiRouter = require("express").Router();
+// api/index.js
+const express = require("express");
+const apiRouter = express.Router();
 
 const jwt = require("jsonwebtoken");
 const { getUserById } = require("../db");
@@ -37,6 +39,7 @@ apiRouter.use((req, res, next) => {
   if (req.user) {
     console.log("User is set:", req.user);
   }
+
   next();
 });
 

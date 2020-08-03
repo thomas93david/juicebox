@@ -1,14 +1,62 @@
-//  uses the Router function to create a new router (usersRouter) and export it from script
-const usersRouter = require("express").Router();
-const { getAllUsers } = require("../db");
-const { getUserByUsername } = require("../db");
-const { createUser } = require("../db");
+const express = require("express");
+const usersRouter = express.Router();
+
+const { createUser, getAllUsers, getUserByUsername } = require("../db");
+
 const jwt = require("jsonwebtoken");
 
-usersRouter.use((req, res, next) => {
-  console.log("A request to http://localhost:3000/api/users is being made");
+usersRouter.get("/", async (req, res) => {
+  try {
+    const users = await getAllUsers();
 
-  next();
+    res.send({
+      users,
+    });
+  } catch ({ name, message }) {
+    next({ name, message });
+  }
+});
+
+usersRouter.post("/login", async (req, res, next) => {
+  const { username, password } = req.body;
+
+  // request must have both
+  if (!username || !password) {
+    next({
+      name: "MissingCredentialsError",
+      message: "Please supply both a username and password",
+    });
+  }
+
+  try {
+    const user = await getUserByUsername(username);
+
+    if (user && user.password == password) {
+      const token = jwt.sign(
+        {
+          id: user.id,
+          username,
+        },
+        process.env.JWT_SECRET,
+        {
+          expiresIn: "1w",
+        }
+      );
+
+      res.send({
+        message: "you're logged in!",
+        token,
+      });
+    } else {
+      next({
+        name: "IncorrectCredentialsError",
+        message: "Username or password is incorrect",
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
 });
 
 usersRouter.post("/register", async (req, res, next) => {
@@ -48,41 +96,6 @@ usersRouter.post("/register", async (req, res, next) => {
     });
   } catch ({ name, message }) {
     next({ name, message });
-  }
-});
-
-usersRouter.post("/login", async (req, res, next) => {
-  const { username, password } = req.body;
-  console.log(req.body);
-
-  // request must have both
-  if (!username || !password) {
-    next({
-      name: "MissingCredentialsError",
-      message: "Please supply both a username and password",
-    });
-  }
-
-  try {
-    const user = await getUserByUsername(username);
-
-    if (user && user.password == password) {
-      // create token & return to user
-      const token = jwt.sign(
-        { id: user.id, username: user.username },
-        process.env.JWT_SECRET,
-        { expiresIn: "1w" }
-      );
-      res.send({ message: "you're logged in!", token, user });
-    } else {
-      next({
-        name: "IncorrectCredentialsError",
-        message: "Username or password is incorrect",
-      });
-    }
-  } catch (error) {
-    console.log(error);
-    next(error);
   }
 });
 
